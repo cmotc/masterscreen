@@ -12,8 +12,6 @@ generate_gpg_pwfile(){
 }
 generate_gpg_datakeys(){
     gpg --gen-key
-    [ cat "$HOME/.gnupg/gpg-agent.conf" | grep allow-loopback-pinentry ] || echo allow-loopback-pinentry > "$HOME/.gnupg/gpg-agent.conf"
-    [ cat "$HOME/.gnupg/gpg-agent.conf" | grep "pinentry-mode loopback" ] || echo "pinentry-mode loopback" > "$HOME/.gnupg/gpg-agent.conf"
 }
 load_gpg_datask(){
     gpg-agent --add "$2" --passphrase "$1"
