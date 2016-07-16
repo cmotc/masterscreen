@@ -1,0 +1,39 @@
+﻿#! /bin/sh
+basic_gpg_decrypt(){
+    [ ! -z "$1" ] && VAL=$(gpg --passphrase "$1" -d $HOME/.masterscreen.gpg)
+    echo "$VAL"
+}
+generate_gpg_pwfile(){
+    PASS=$(whiptail --passwordbox "please enter your secret password" 8 78 --title "password dialog" 3>&1 1>&2 2>&3)
+    PASSC=$(whiptail --passwordbox "please confirm your secret password" 8 78 --title "password dialog" 3>&1 1>&2 2>&3)
+    PASSS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 128 | head -n 1)
+    [ "$PASS" = "$PASSC" ] && echo "$PASSS" | gpg --cipher-algo AES256 --passphrase "$PASS" --output "$HOME/.masterscreen.gpg" --symmetric
+    unset PASS; unset PASSC;
+echo "%echo Generating a basic OpenPGP key
+Key-Length: 4096
+Name-Real: masterscreen
+Name-Email: masterscreen@localhost
+Expire-Date: 1y
+Passphrase: $PASSS
+%pubring masterscreen.pub
+%secring masterscreen.sec
+# Do a commit here, so that we can later print "done" :-)
+%commit
+%echo done" | gpg --gen-key --batch -
+    unset PASSS
+}
+load_gpg_datask(){
+    VAL=basic_gpg_decrypt "$1"
+    gpg-agent --add "$2" --passphrase "$VAL"
+}
+unload_gpg_datask(){
+    gpg-connect-agent reloadagent /bye
+}
+
+if [ -f "$HOME/.masterscreen.gpg"]; then
+        [ -z "$1" ] && [ -z "$2" ] && load_gpg_datask "$2" "$1"
+        [ ! -z "$1" ] && unload_gpg_datask
+else
+        generate_gpg_pwfile
+fi
+
