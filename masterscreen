@@ -23,7 +23,7 @@ Passphrase: $PASSS
 }
 load_gpg_datask(){
     VAL=basic_gpg_decrypt "$1"
-    gpg-agent --add "$2" --passphrase "$VAL"
+    gpg --local-user $2 --passphrase "$VAL" --decrypt "Encrypted.gpg" &
 }
 unload_gpg_datask(){
     gpg-connect-agent reloadagent /bye
