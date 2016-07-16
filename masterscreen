@@ -1,4 +1,5 @@
 ﻿#! /bin/sh
+
 basic_gpg_decrypt(){
     [ ! -z "$1" ] && VAL=$(gpg --passphrase "$1" -d $HOME/.masterscreen.gpg)
     echo "$VAL"
@@ -10,14 +11,12 @@ generate_gpg_pwfile(){
     [ "$PASS" = "$PASSC" ] && echo "$PASSS" | gpg --cipher-algo AES256 --passphrase "$PASS" --output "$HOME/.masterscreen.gpg" --symmetric
     unset PASS; unset PASSC;
 echo "%echo Generating a basic OpenPGP key
+Key-Type: RSA
 Key-Length: 4096
 Name-Real: masterscreen
 Name-Email: masterscreen@localhost
 Expire-Date: 1y
 Passphrase: $PASSS
-%pubring masterscreen.pub
-%secring masterscreen.sec
-# Do a commit here, so that we can later print "done" :-)
 %commit
 %echo done" | gpg --gen-key --batch -
     unset PASSS
@@ -30,8 +29,8 @@ unload_gpg_datask(){
     gpg-connect-agent reloadagent /bye
 }
 
-if [ -f "$HOME/.masterscreen.gpg"]; then
-        [ -z "$1" ] && [ -z "$2" ] && load_gpg_datask "$2" "$1"
+if [ -f "$HOME/.masterscreen.gpg" ]; then
+        [ -z "$2" ] && [ -z "$1" ] && load_gpg_datask "$2" "$1"
         [ ! -z "$1" ] && unload_gpg_datask
 else
         generate_gpg_pwfile
